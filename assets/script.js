@@ -21,16 +21,16 @@ $(document).ready(function () {
     $("#hr17 .description").val(localStorage.getItem("hr17"));
    
     function timeTracker() {
-        var timeNow = moment().hour();
+        var currentTime = moment().hour();
         $(".time-block").each(function () {
             var blockTime = parseInt($(this).attr("id").split("hr")[1]);
 
-            if (blockTime < timeNow) {
+            if (blockTime < currentTime) {
                 $(this).removeClass("future");
                 $(this).removeClass("present");
                 $(this).addClass("past");
             }
-            else if (blockTime === timeNow) {
+            else if (blockTime === currentTime) {
                 $(this).removeClass("past");
                 $(this).removeClass("future");
                 $(this).addClass("present");
