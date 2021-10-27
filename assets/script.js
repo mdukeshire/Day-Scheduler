@@ -1,48 +1,86 @@
-var todayDate = moment().format('dddd, MMM Do YYYY, h:mm:ss a');
-$("#currentDay").html(todayDate);
+var day = $("#currentDay");
+var timeBlock = $(".time-block");
+var form = $(".schedule");
+var inputItems = [];
+var date = moment().format("dddd, MMMM Do");
+var hour = moment().format("H");
 
-$(document).ready(function () {
-    $(".saveBtn").on("click", function () {
-        var text = $(this).siblings(".description").val();
-        var time = $(this).parent().attr("id");
+function initializeSchedule() {
 
-        localStorage.setItem(time, text);
-    })
-
-    $("#hr8 .description").val(localStorage.getItem("hr8"));
-    $("#hr9 .description").val(localStorage.getItem("hr9"));
-    $("#hr10 .description").val(localStorage.getItem("hr10"));
-    $("#hr11 .description").val(localStorage.getItem("hr11"));
-    $("#hr12 .description").val(localStorage.getItem("hr12"));
-    $("#hr13 .description").val(localStorage.getItem("hr13"));
-    $("#hr14 .description").val(localStorage.getItem("hr14"));
-    $("#hr15 .description").val(localStorage.getItem("hr15"));
-    $("#hr16 .description").val(localStorage.getItem("hr16"));
-    $("#hr17 .description").val(localStorage.getItem("hr17"));
-   
-    function timeTracker() {
-        var currentTime = moment().hour();
-        $(".time-block").each(function () {
-            var blockTime = parseInt($(this).attr("id").split("hr")[1]);
-
-            if (blockTime < currentTime) {
-                $(this).removeClass("future");
-                $(this).removeClass("present");
-                $(this).addClass("past");
-            }
-            else if (blockTime === currentTime) {
-                $(this).removeClass("past");
-                $(this).removeClass("future");
-                $(this).addClass("present");
-            }
-            else {
-                $(this).removeClass("present");
-                $(this).removeClass("past");
-                $(this).addClass("future");
-
-            }
-        })
+  timeBlock.each(function () {
+    var block = $(this);
+    var blockHour = parseInt(block.attr("data-hour"));
+    var object = {
+      hour: blockHour,
+      text: "",
     }
 
-    timeTracker();
-})
+    inputItems.push(object);
+  });
+
+  localStorage.setItem("todo-input", JSON.stringify(inputItems));
+
+}
+
+function timeBlockSetUp() {
+  timeBlock.each(function () {
+    var block = $(this);
+    var blockHour = parseInt(block.attr("data-hour"));
+
+    if (blockHour == hour) {
+      block.addClass("present").removeClass("past future");
+    }
+    if (blockHour < hour) {
+      block.addClass("past").removeClass("present future");
+    }
+    if (blockHour > hour) {
+      block.addClass("future").removeClass("past present");
+    }
+  });
+}
+
+function renderSchedule() {
+  inputItems = localStorage.getItem("todo-input");
+  inputItems = JSON.parse(inputItems);
+
+  for (var i = 0; i < inputItems.length; i++) {
+    var hourItem = inputItems[i].hour;
+    var textItem = inputItems[i].text;
+
+    $("[data-hour=" + hourItem + "]").children("textarea").val(textItem);
+  }
+}
+
+function save() {
+  var block = $(this).parent();
+  var hourUpdate = $(this).parent().attr("data-hour");
+  var addItem = (($(this).parent()).children("textarea")).val();
+
+
+  for (var h = 0; h < inputItems.length; h++) {
+    if (inputItems[h].hour == hourUpdate) {
+       inputItems[h].text = addItem;
+    }
+  }
+  localStorage.setItem("todo-input", JSON.stringify(inputItems));
+  renderSchedule();
+}
+
+
+$(document).ready(function () {
+
+
+  timeBlockSetUp();
+
+  if (!localStorage.getItem("todo-input")) {
+
+    initializeSchedule();
+  }
+
+  day.text(date);
+
+  renderSchedule();
+
+  form.on("click", "button", save);
+
+});
